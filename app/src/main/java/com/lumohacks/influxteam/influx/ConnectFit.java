@@ -70,8 +70,6 @@ public class ConnectFit extends AppCompatActivity {
                     GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
                     GoogleSignIn.getLastSignedInAccount(this),
                     fitnessOptions);
-        } else {
-            accessGoogleFit();
         }
         initAnalyzeService();
     }
@@ -102,62 +100,12 @@ public class ConnectFit extends AppCompatActivity {
     }
 
     protected void onDestroy() {
-        stopService(mServiceIntent);
-        Log.i("MAINACT", "onDestroy!");
+        //stopService(mServiceIntent);
+        //Log.i("MAINACT", "onDestroy!");
         super.onDestroy();
 
     }
 
-    private void accessGoogleFit() {
-
-        Calendar cal = Calendar.getInstance();
-        Date time_now = new Date();
-        cal.setTime(time_now);
-        long now = cal.getTimeInMillis();
-
-        Date old_time = new Date("Sept 14, 2018");
-        cal.setTime(old_time);
-        long old = cal.getTimeInMillis();
-
-        DataReadRequest readRequest = new DataReadRequest.Builder()
-                .aggregate(DataType.TYPE_HEART_RATE_BPM, DataType.AGGREGATE_HEART_RATE_SUMMARY)
-                .setTimeRange(old, now, TimeUnit.MILLISECONDS)
-                .bucketByTime(5, TimeUnit.HOURS)
-                .build();
-
-
-        Fitness.getHistoryClient(this, GoogleSignIn.getLastSignedInAccount(this))
-                .readData(readRequest)
-                .addOnSuccessListener(new OnSuccessListener<DataReadResponse>() {
-                    @Override
-                    public void onSuccess(DataReadResponse dataReadResponse) {
-                        int i =0;
-
-                            for (Bucket set: dataReadResponse.getBuckets()) {
-                                for(DataSet ds: set.getDataSets())
-                                    for(DataPoint dp : ds.getDataPoints())
-                                        for (Field field : dp.getDataType().getFields()) {
-                                            Log.i("STEPS", "\tField: " + field.getName() + " Value: " + dp.getValue(field));
-                                        }
-                            }
-                        Log.e(LOG_TAG, "success()");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.e(LOG_TAG, "onFailure()", e);
-                    }
-                })
-                .addOnCompleteListener(new OnCompleteListener() {
-                    @Override
-                    public void onComplete(@NonNull Task task) {
-                        Log.d(LOG_TAG, "onComplete()");
-                        accessGoogleFit();
-
-                    }
-                });
-    }
 
     public void watchFunnyVideos(View view){
         Intent webIntent = new Intent(Intent.ACTION_VIEW,

@@ -8,22 +8,44 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.fitness.Fitness;
+import com.google.android.gms.fitness.data.Bucket;
+import com.google.android.gms.fitness.data.DataPoint;
+import com.google.android.gms.fitness.data.DataSet;
+import com.google.android.gms.fitness.data.DataType;
+import com.google.android.gms.fitness.data.Field;
+import com.google.android.gms.fitness.request.DataReadRequest;
+import com.google.android.gms.fitness.result.DataReadResponse;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by fabio on 30/01/2016.
  */
 public class AnalyzeService extends Service {
     public int counter=0;
+    private static String LOG_TAG = "test";
+    Context ctx;
+
 
     public AnalyzeService(Context applicationContext) {
         super();
+        ctx = this;
         Log.i("HERE", "here I am!");
     }
 
@@ -70,9 +92,67 @@ public class AnalyzeService extends Service {
 
                 /// Add your code to here for the getting data and performing Analyses.
                 Log.i("in timer", "in timer ++++  "+ (counter++));
+
+
+                accessGoogleFit();
+
+
                 createNotification();
             }
         };
+    }
+
+
+
+    public void accessGoogleFit() {
+
+        Calendar cal = Calendar.getInstance();
+        Date time_now = new Date();
+        cal.setTime(time_now);
+        long now = cal.getTimeInMillis();
+
+        Date old_time = new Date("Sept 14, 2018");
+        cal.setTime(old_time);
+        long old = cal.getTimeInMillis();
+
+        DataReadRequest readRequest = new DataReadRequest.Builder()
+                .aggregate(DataType.TYPE_HEART_RATE_BPM, DataType.AGGREGATE_HEART_RATE_SUMMARY)
+                .setTimeRange(old, now, TimeUnit.MILLISECONDS)
+                .bucketByTime(5, TimeUnit.HOURS)
+                .build();
+
+
+        Fitness.getHistoryClient(this, GoogleSignIn.getLastSignedInAccount(this))
+                .readData(readRequest)
+                .addOnSuccessListener(new OnSuccessListener<DataReadResponse>() {
+                    @Override
+                    public void onSuccess(DataReadResponse dataReadResponse) {
+                        int i =0;
+
+                        for (Bucket set: dataReadResponse.getBuckets()) {
+                            for(DataSet ds: set.getDataSets())
+                                for(DataPoint dp : ds.getDataPoints())
+                                    for (Field field : dp.getDataType().getFields()) {
+                                        Log.i("STEPS", "\tField: " + field.getName() + " Value: " + dp.getValue(field));
+                                    }
+                        }
+                        Log.e(LOG_TAG, "success()");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e(LOG_TAG, "onFailure()", e);
+                    }
+                })
+                .addOnCompleteListener(new OnCompleteListener() {
+                    @Override
+                    public void onComplete(@NonNull Task task) {
+                        Log.d(LOG_TAG, "onComplete()");
+                        accessGoogleFit();
+
+                    }
+                });
     }
 
     private void createNotification(){
@@ -85,8 +165,8 @@ public class AnalyzeService extends Service {
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, "1")
                 .setSmallIcon(R.drawable.ic_launcher_background)
-                .setContentTitle("Rishab Notification")
-                .setContentText("this si lorem ipsum")
+                .setContentTitle("Influx")
+                .setContentText("Feeling Stressed??")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true)
                 .addAction(R.drawable.googleg_standard_color_18, "Google Assist", googleAssistOpenIntent)

@@ -10,7 +10,7 @@ public class AnalyzeReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.i(AnalyzeReceiver.class.getSimpleName(), "Service Stops! OOPS!!!!");
-        Intent i = new Intent(context, AnalyzeService.class);
+        Intent i = new Intent(context, AnalyzeService.class).setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
         context.startService(i);
     }
 }
