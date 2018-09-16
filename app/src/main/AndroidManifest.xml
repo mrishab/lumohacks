@@ -15,7 +15,6 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -29,9 +28,8 @@
             android:exported="true"
             android:label="RestartServiceWhenStopped">
             <intent-filter>
-                <action android:name="."/>
+                <action android:name="uk.ac.shef.oak.ActivityRecognition.RestartSensor"/>
             </intent-filter>
-            <category android:name="android.intent.category.DEFAULT" />
         </receiver>
     </application>
 

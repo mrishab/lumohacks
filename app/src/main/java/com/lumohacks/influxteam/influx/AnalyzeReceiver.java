@@ -7,10 +7,10 @@ import android.util.Log;
 
 public class AnalyzeReceiver extends BroadcastReceiver {
 
-    public AnalyzeReceiver(){}
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.i(AnalyzeReceiver.class.getSimpleName(), "Service Stops! OOPS!!!!");
-        context.startService(new Intent(context, AnalyzeReceiver.class));
+        Intent i = new Intent(context, AnalyzeService.class);
+        context.startService(i);
     }
 }

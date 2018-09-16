@@ -1,17 +1,14 @@
 package com.lumohacks.influxteam.influx;
 
 import android.app.ActivityManager;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Bundle;
-import android.renderscript.Element;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.fitness.*;
@@ -22,6 +19,8 @@ import com.google.android.gms.tasks.*;
 
 
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageButton;
 
 import java.util.Date;
 import java.util.Calendar;
@@ -40,10 +39,12 @@ public class ConnectFit extends AppCompatActivity {
 
     private static final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1;
 
-    AnalyzeReceiver mReceiver;
     Intent mServiceIntent;
     private AnalyzeService mAnalyzeService;
     Context ctx;
+
+    ImageButton button;
+
     public Context getCtx() {
         return ctx;
     }
@@ -54,23 +55,16 @@ public class ConnectFit extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         ctx = this;
         setContentView(R.layout.activity_connect_fit);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
         FitnessOptions fitnessOptions = FitnessOptions.builder()
                 .addDataType(DataType.TYPE_HEART_RATE_BPM, FitnessOptions.ACCESS_READ)
                 .addDataType(DataType.AGGREGATE_HEART_RATE_SUMMARY, FitnessOptions.ACCESS_READ)
                 .build();
 
-        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(this), fitnessOptions)) {
+        if (!GoogleSignIn.hasPermissions(
+                GoogleSignIn.getLastSignedInAccount(this),
+                fitnessOptions)
+        ) {
             GoogleSignIn.requestPermissions(
                     this, // your activity
                     GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
@@ -79,12 +73,16 @@ public class ConnectFit extends AppCompatActivity {
         } else {
             accessGoogleFit();
         }
-
         initAnalyzeService();
     }
 
+    public void googleAssistant(View view){
+
+        Intent i = new Intent(Intent.ACTION_VOICE_COMMAND);
+        startActivity(i);
+    }
+
     private void initAnalyzeService(){
-        mReceiver = new AnalyzeReceiver();
         mAnalyzeService = new AnalyzeService(getCtx());
         mServiceIntent = new Intent(getCtx(), mAnalyzeService.getClass());
         if (!isMyServiceRunning(mAnalyzeService.getClass())) {
@@ -141,10 +139,7 @@ public class ConnectFit extends AppCompatActivity {
                                         for (Field field : dp.getDataType().getFields()) {
                                             Log.i("STEPS", "\tField: " + field.getName() + " Value: " + dp.getValue(field));
                                         }
-
-
                             }
-
                         Log.e(LOG_TAG, "success()");
                     }
                 })
@@ -158,7 +153,21 @@ public class ConnectFit extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task task) {
                         Log.d(LOG_TAG, "onComplete()");
+                        accessGoogleFit();
+
                     }
                 });
+    }
+
+    public void watchFunnyVideos(View view){
+        Intent webIntent = new Intent(Intent.ACTION_VIEW,
+                Uri.parse("http://www.youtube.com/results?search_query=funny+videos"));
+        startActivity(webIntent);
+    }
+
+    public void watchMeditationVideo(View view) {
+        Intent webIntent = new Intent(Intent.ACTION_VIEW,
+                Uri.parse("https://www.youtube.com/watch?v=6xDyPcJrl0c"));
+        startActivity(webIntent);
     }
 }
