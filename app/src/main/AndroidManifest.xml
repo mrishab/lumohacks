@@ -19,6 +19,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".AnalyzeService"
+            android:enabled="true" >
+        </service>
+        <receiver
+            android:name=".AnalyzeReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:label="RestartServiceWhenStopped">
+            <intent-filter>
+                <action android:name="."/>
+            </intent-filter>
+            <category android:name="android.intent.category.DEFAULT" />
+        </receiver>
     </application>
 
 </manifest>

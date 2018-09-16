@@ -1,6 +1,11 @@
 package com.lumohacks.influxteam.influx;
 
+import android.app.ActivityManager;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.renderscript.Element;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -17,6 +22,7 @@ import com.google.android.gms.tasks.*;
 
 
 import android.util.Log;
+
 import java.util.Date;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
@@ -33,10 +39,20 @@ public class ConnectFit extends AppCompatActivity {
     private String LOG_TAG ="test";
 
     private static final int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 1;
+
+    AnalyzeReceiver mReceiver;
+    Intent mServiceIntent;
+    private AnalyzeService mAnalyzeService;
+    Context ctx;
+    public Context getCtx() {
+        return ctx;
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        ctx = this;
         setContentView(R.layout.activity_connect_fit);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -63,8 +79,36 @@ public class ConnectFit extends AppCompatActivity {
         } else {
             accessGoogleFit();
         }
+
+        initAnalyzeService();
     }
 
+    private void initAnalyzeService(){
+        mReceiver = new AnalyzeReceiver();
+        mAnalyzeService = new AnalyzeService(getCtx());
+        mServiceIntent = new Intent(getCtx(), mAnalyzeService.getClass());
+        if (!isMyServiceRunning(mAnalyzeService.getClass())) {
+            startService(mServiceIntent);
+        }
+    }
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                Log.i ("isMyServiceRunning?", true+"");
+                return true;
+            }
+        }
+        Log.i ("isMyServiceRunning?", false+"");
+        return false;
+    }
+
+    protected void onDestroy() {
+        stopService(mServiceIntent);
+        Log.i("MAINACT", "onDestroy!");
+        super.onDestroy();
+
+    }
 
     private void accessGoogleFit() {
 
@@ -117,7 +161,4 @@ public class ConnectFit extends AppCompatActivity {
                     }
                 });
     }
-
-
-
 }
