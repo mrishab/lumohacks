@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Influx</string>
+    <string name="title_activity_connect_fit">ConnectFit</string>
+</resources>
